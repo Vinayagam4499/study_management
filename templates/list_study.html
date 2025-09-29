@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #d9e3f0;
+            padding: 30px;
+            border-radius: 5px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background-color: #4a90e2;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: normal;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+
+        .btn-primary {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #357abd;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .button-group {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .actions {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Study Management</h1>
+
+        {% if messages %}
+<script>
+    {% for message in messages %}
+        Swal.fire({
+            icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}",
+            title: "{{ message|escapejs }}"
+        });
+    {% endfor %}
+</script>
+{% endif %}
+
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50px;"></th>
+                    <th>Study name</th>
+                    <th>Study Phase</th>
+                    <th>Sponsor Name</th>
+                    <th>Study Description</th>
+                    <th style="width: 200px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for study in studies %}
+                <tr>
+                    <td><input type="checkbox" class="checkbox"></td>
+                    <td>{{ study.study_name }}</td>
+                    <td>{{ study.study_phase }}</td>
+                    <td>{{ study.sponsor_name }}</td>
+                    <td>{{ study.study_description }}</td>
+                    <td class="actions">
+                        <a href="{% url 'study_view' study.pk %}" class="btn btn-secondary">View</a>
+                        <a href="{% url 'study_edit' study.pk %}" class="btn btn-secondary">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center;">No studies found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="button-group">
+            <a href="{% url 'study_add' %}" class="btn btn-primary">Add Study</a>
+            <button class="btn btn-primary" onclick="deleteSelected()">Delete Study</button>
+        </div>
+    </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<script>
+    function deleteSelected() {
+        const checkboxes = document.querySelectorAll('.checkbox:checked');
+        if (checkboxes.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No study selected',
+                text: 'Please select at least one study to delete'
+            });
+            return;
+        }
+
+        const ids = Array.from(checkboxes).map(cb =>
+            cb.closest('tr').querySelector('a[href*="edit"]').href.split('/').slice(-2)[0]
+        );
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: ids.length === 1 ?
+                "This study will be permanently deleted!" :
+                "These studies will be permanently deleted!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (ids.length === 1) {
+                    // Single delete
+                    window.location.href = `/delete/${ids[0]}/`;
+                } else {
+                    // Bulk delete
+                    window.location.href = `/delete_bulk/?ids=${ids.join(',')}`;
+                }
+            }
+        });
+    }
+</script>
+
+
+</body>
+</html>
