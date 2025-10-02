@@ -75,6 +75,8 @@
             cursor: pointer;
             font-size: 14px;
             margin: 0 5px;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-primary {
@@ -94,19 +96,61 @@
         .btn-secondary:hover {
             background-color: #5a6268;
         }
+
+
+        .sponsor-wrapper {
+            position: relative;
+        }
+
+        .sponsor-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .sponsor-dropdown.show {
+            display: block;
+        }
+
+        .sponsor-option {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .sponsor-option:hover {
+            background-color: #f5f5f5;
+        }
+
+        .sponsor-option:last-child {
+            border-bottom: none;
+        }
+
+        .no-results {
+            padding: 10px;
+            color: #999;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>{{ action }} Study</h1>
 
-        <form method="post">
-            {% csrf_token %}
-
+        <form method="post" id="studyForm">
             <div class="form-group">
                 <label for="study_name">Study Name *</label>
-                <input type="text" id="study_name" name="study_name"
-                       value="{{ study.study_name|default:'' }}" required>
+                <input type="text" id="study_name" name="study_name" required>
             </div>
 
             <div class="form-group">
@@ -124,26 +168,77 @@
 
             <div class="form-group">
                 <label for="sponsor_name">Sponsor Name *</label>
-                <input type="text" id="sponsor_name" name="sponsor_name"
-                       value="{{ study.sponsor_name|default:'' }}"
-                       list="sponsor_list" required>
-                <datalist id="sponsor_list">
-                    {% for sponsor in sponsors %}
-                    <option value="{{ sponsor }}">
-                    {% endfor %}
-                </datalist>
+                <div class="sponsor-wrapper">
+                    <input type="text"
+                           id="sponsor_name"
+                           name="sponsor_name"
+                           placeholder="Type or select a sponsor..."
+                           autocomplete="off"
+                           required>
+                    <div class="sponsor-dropdown" id="sponsorDropdown"></div>
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="study_description">Study Description *</label>
-                <textarea id="study_description" name="study_description" required>{{ study.study_description|default:'' }}</textarea>
+                <textarea id="study_description" name="study_description" required></textarea>
             </div>
 
             <div class="button-group">
                 <button type="submit" class="btn btn-primary">Save</button>
-                <a href="{% url 'study_list' %}" class="btn btn-secondary">Cancel</a>
+                <a href="#" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>
+
+    <script>
+        const sponsors = [
+            {% for sponsor in sponsors %}
+            '{{ sponsor|escapejs }}',
+            {% endfor %}
+        ];
+
+        const sponsorInput = document.getElementById('sponsor_name');
+        const sponsorDropdown = document.getElementById('sponsorDropdown');
+
+        sponsorInput.addEventListener('focus', function() {
+            showDropdown(sponsors);
+        });
+
+        sponsorInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filtered = sponsors.filter(sponsor =>
+                sponsor.toLowerCase().includes(searchTerm)
+            );
+            showDropdown(filtered);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.sponsor-wrapper')) {
+                sponsorDropdown.classList.remove('show');
+            }
+        });
+
+        function showDropdown(list) {
+            sponsorDropdown.innerHTML = '';
+
+            if (list.length === 0) {
+                sponsorDropdown.innerHTML = '<div class="no-results">No sponsors found</div>';
+            } else {
+                list.forEach(sponsor => {
+                    const option = document.createElement('div');
+                    option.className = 'sponsor-option';
+                    option.textContent = sponsor;
+                    option.addEventListener('click', function() {
+                        sponsorInput.value = sponsor;
+                        sponsorDropdown.classList.remove('show');
+                    });
+                    sponsorDropdown.appendChild(option);
+                });
+            }
+
+            sponsorDropdown.classList.add('show');
+        }
+    </script>
 </body>
 </html>
