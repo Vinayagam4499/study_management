@@ -97,7 +97,7 @@
             background-color: #5a6268;
         }
 
-
+        /* Custom dropdown styles for sponsor field */
         .sponsor-wrapper {
             position: relative;
         }
@@ -147,10 +147,13 @@
     <div class="container">
         <h1>{{ action }} Study</h1>
 
-        <form method="post" id="studyForm">
+        <form method="post">
+            {% csrf_token %}
+
             <div class="form-group">
                 <label for="study_name">Study Name *</label>
-                <input type="text" id="study_name" name="study_name" required>
+                <input type="text" id="study_name" name="study_name"
+                       value="{{ study.study_name|default:'' }}" required>
             </div>
 
             <div class="form-group">
@@ -169,24 +172,22 @@
             <div class="form-group">
                 <label for="sponsor_name">Sponsor Name *</label>
                 <div class="sponsor-wrapper">
-                    <input type="text"
-                           id="sponsor_name"
-                           name="sponsor_name"
+                    <input type="text" id="sponsor_name" name="sponsor_name"
+                           value="{{ study.sponsor_name|default:'' }}"
                            placeholder="Type or select a sponsor..."
-                           autocomplete="off"
-                           required>
+                           autocomplete="off" required>
                     <div class="sponsor-dropdown" id="sponsorDropdown"></div>
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="study_description">Study Description *</label>
-                <textarea id="study_description" name="study_description" required></textarea>
+                <textarea id="study_description" name="study_description" required>{{ study.study_description|default:'' }}</textarea>
             </div>
 
             <div class="button-group">
                 <button type="submit" class="btn btn-primary">Save</button>
-                <a href="#" class="btn btn-secondary">Cancel</a>
+                <a href="{% url 'study_list' %}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>
@@ -201,6 +202,7 @@
         const sponsorInput = document.getElementById('sponsor_name');
         const sponsorDropdown = document.getElementById('sponsorDropdown');
 
+        // Show dropdown when input is focused
         sponsorInput.addEventListener('focus', function() {
             showDropdown(sponsors);
         });
