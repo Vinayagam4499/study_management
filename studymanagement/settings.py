@@ -87,11 +87,11 @@ WSGI_APPLICATION = "studymanagement.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "study_db",        # Your MySQL database name
-        "USER": "vinayuser",       # Your MySQL username
-        "PASSWORD": "vinaypass",   # Your MySQL password
-        "HOST": "localhost",       # Usually localhost
-        "PORT": "3306",            # Default MySQL port
+        "NAME": "study_db",
+        "USER": "vinayuser",
+        "PASSWORD": "vinaypass",
+        "HOST": "localhost",
+        "PORT": "3306",
         "OPTIONS": {
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
         }
@@ -139,3 +139,34 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs/debug.log',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'DEBUG',
+    },
+}
